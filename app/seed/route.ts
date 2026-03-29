@@ -5,27 +5,29 @@ import { invoices, customers, revenue, users } from '../lib/placeholder-data';
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 async function seedUsers() {
+  console.log('START - Running Users SQL...');
   await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
   await sql`
-    CREATE TABLE IF NOT EXISTS users (
-      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email TEXT NOT NULL UNIQUE,
-      password TEXT NOT NULL
+  CREATE TABLE IF NOT EXISTS users (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL
     );
-  `;
-
+    `;
+    
   const insertedUsers = await Promise.all(
     users.map(async (user) => {
       const hashedPassword = await bcrypt.hash(user.password, 10);
       return sql`
-        INSERT INTO users (id, name, email, password)
-        VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
-        ON CONFLICT (id) DO NOTHING;
+      INSERT INTO users (id, name, email, password)
+      VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
+      ON CONFLICT (id) DO NOTHING;
       `;
     }),
   );
-
+    
+  console.log('START - Seeding users...');
   return insertedUsers;
 }
 
@@ -102,6 +104,7 @@ async function seedRevenue() {
 }
 
 export async function GET() {
+  console.log('Seeding database...');
   try {
     const result = await sql.begin((sql) => [
       seedUsers(),
