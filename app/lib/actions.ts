@@ -26,7 +26,7 @@ export async function createInvoice(formData: FormData) {
         status: formData.get('status'),
     });
 
-    const amountInCents = amount * 100;
+    const amountInCents = Math.round(amount * 100);
     const date = new Date().toISOString().split('T')[0];
 
     await sql `
@@ -45,7 +45,7 @@ export async function updateInvoice(id: string, formData: FormData) {
         status: formData.get('status'),
     });
 
-    const amountInCents = amount * 100;
+    const amountInCents = Math.round(amount * 100);
     
     await sql `
         UPDATE invoices
